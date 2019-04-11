@@ -29,9 +29,7 @@ var spinnerInerval = window.setInterval(draw, 1000 / 30);
 let applesArray = [];
 
 const Http = new XMLHttpRequest();
-const url = "https://server.pinoshe.now.sh:8080/apples";
-
-Http.open("GET", url);
+Http.open("GET", "apples");
 Http.send();
 Http.onload = e => {
   applesArray = JSON.parse(Http.responseText);

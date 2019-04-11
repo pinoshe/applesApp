@@ -54,6 +54,61 @@ function insertAllApples(data) {
       }
     });
   });
+
+  function getDistance(pointA, pointB) {
+    let dX = pointA.x_position - pointB.x_position,
+      dY = pointA.y_position - pointB.y_position;
+    return Math.hypot(dX, dY);
+    // return Math.sqrt(dX * dX + dY * dY);
+  }
+
+  function getNeighbourhoodPoints(pointsArray, centerPoint, distance = 5) {
+    return pointsArray.filter(function(point) {
+      return getDistance(point, centerPoint) < distance;
+    });
+  }
+
+  function getGaussianKernel(distance, bandwidth) {
+    return (
+      (1 / (bandwidth * Math.sqrt(2 * Math.pi))) *
+      Math.exp(-0.5 * (distance / bandwidth) ** 2)
+    );
+  }
+
+  let lookDistance = 6; //How far to look for neighbours.
+  let kernelBandwidth = 4; // Kernel parameter.
+  let numOfIterations = 5; // optional.
+
+  // 1) For each datapoint x ∈ X, find the neighbouring points N(x) of x.
+  // 2) For each datapoint x ∈ X, calculate the mean shift m(x).
+  // 3) For each datapoint x ∈ X, update x ← m(x).
+  // Repeat 1. for n_iterations or until the points are almost not moving or not moving.
+
+  appleObjectsArray.forEach(function(apple) {
+    //1) For each datapoint x ∈ X, find the neighbouring points N(x) of x.
+    let neighbours = getNeighbourhoodPoints(
+      appleObjectsArray,
+      apple,
+      lookDistance
+    );
+
+    console.log(`apple: ${apple_num} has ${neighbours.length} neighbours.`);
+
+    // 2) For each datapoint x ∈ X, calculate the mean shift m(x).
+    let totalNumerator = 0,
+      totalDenominator = 0;
+    for (let i of neighbours) {
+      let neighbour = neighbours[i],
+        distance = getDistance(neighbour, apple),
+        weight = getGaussianKernel(distance, kernelBandwidth),
+        numerator =
+          weight * neighbour.x_position + weight * neighbour.y_position;
+
+      totalNumerator += numerator;
+      totalDenominator += weight;
+    }
+    let new_x = totalNumerator / totalDenominator;
+  });
 }
 
 exports.list_all_apples = (req, res) => {
@@ -73,72 +128,3 @@ exports.list_all_apples = (req, res) => {
       });
   });
 };
-
-exports.read_a_task = (req, res) => {
-  DB.query("Select * from tasks where id = ? ", req.params.taskId, function(
-    err,
-    resp
-  ) {
-    if (err) {
-      console.log("error: ", err);
-      res.send(err);
-    } else {
-      res.json(resp);
-    }
-  });
-};
-
-exports.update_a_task = (req, res) => {
-  var task = req.body;
-  var assignment_list = Object.keys(task).join(" =  ? ,") + " = ? ";
-  task.due_date = task.due_date ? new Date(task.due_date) : void 0;
-  DB.query(
-    "UPDATE tasks SET " + assignment_list + " WHERE id = ?",
-    Object.values(task).concat([req.params.taskId]),
-    function(err, resp) {
-      if (err) {
-        console.log("error: ", err);
-        res.send(err);
-      } else {
-        res.json(resp);
-      }
-    }
-  );
-};
-
-exports.delete_a_task = (req, res) => {
-  DB.query("DELETE FROM tasks WHERE id = ?", [req.params.taskId], function(
-    err,
-    resp
-  ) {
-    if (err) {
-      console.log("error: ", err);
-      res.send(err);
-    } else {
-      res.json({ message: "Task successfully deleted" });
-    }
-  });
-};
-
-// DB.query("INSERT INTO APPLES SET v?", newApple, function(err, resp) {
-//   if (err) {
-//     console.log("error: ", err);
-//   } else {
-//     console.log(
-//       "message: Apple successfully created, id: " + resp.insertId
-//     );
-//   }
-// });
-
-// DB.connect(err => {
-//   console.log("mongo");
-//   console.log(err);
-//   const collection = DB.db("apples_db")
-//     .collection("apples")
-//     .find({})
-//     .toArray(function(err, result) {
-//       if (err) throw err;
-//       console.log(result);
-//       DB.close();
-//     });
-// });
