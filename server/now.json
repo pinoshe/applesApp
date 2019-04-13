@@ -1,5 +1,4 @@
 {
   "name": "applesApp",
-  "version": 2,
-  "builds": [{ "src": "./data_analistics/*.py", "use": "@now/python" }]
+  "version": 2
 }
