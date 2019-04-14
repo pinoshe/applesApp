@@ -18,17 +18,21 @@ app.use(bodyParser.json());
 var routes = require("./server/routes");
 routes(app);
 
-https
-  .createServer(
-    {
-      key: fs.readFileSync("server.key"),
-      cert: fs.readFileSync("server.cert")
-    },
-    app
-  )
-  .listen(port, () => {
-    console.log("Apples app server started on: " + port);
-  });
+// https
+//   .createServer(
+//     {
+//       key: fs.readFileSync("server.key"),
+//       cert: fs.readFileSync("server.cert")
+//     },
+//     app
+//   )
+//   .listen(port, () => {
+//     console.log("Apples app server started on: " + port);
+//   });
+
+app.listen(port, () => {
+  console.log("Apples app server started on: " + port);
+});
 
 process.on("uncaughtException", function(err) {
   console.log(err);
