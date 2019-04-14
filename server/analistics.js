@@ -94,9 +94,9 @@ exports.lisenToData = callBack => {
 
   try {
     const pythonProcess = spawn("python", [
-      "./data_analytics/AppleParser.py",
+      "./AppleParser.py",
       "ExampleMap",
-      "C:/projects/applesApp/data_analytics/"
+      "C:/projects/applesApp/"
     ]);
 
     pythonProcess.stdout.on("data", data => {
