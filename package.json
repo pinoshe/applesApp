@@ -2,7 +2,11 @@
   "name": "applesApp",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
@@ -10,18 +14,15 @@
     "nodemon": "^1.18.9"
   },
   "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pinoshe/todolist-node-react.git"
+    "url": "git+https://github.com/pinoshe/applesApp.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/pinoshe/todolist-node-react/issues"
+    "url": "https://github.com/pinoshe/applesApp/issues"
   },
-  "homepage": "https://github.com/pinoshe/todolist-node-react#readme"
+  "homepage": ""
 }

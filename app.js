@@ -8,14 +8,14 @@ var express = require("express"),
 const https = require("https");
 const fs = require("fs");
 
-const DB = require("./db");
+const DB = require("./server/db");
 
-app.use("/scripts", express.static(__dirname + "/scripts"));
-app.use("/images", express.static(__dirname + "/images"));
+app.use("/scripts", express.static(__dirname + "/server/scripts"));
+app.use("/images", express.static(__dirname + "/server/images"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-var routes = require("./routes");
+var routes = require("./server/routes");
 routes(app);
 
 https

@@ -34,7 +34,7 @@ startSpinner();
 let applesArray = [];
 
 const Http = new XMLHttpRequest();
-Http.open("GET", "apples");
+Http.open("GET", "api/apples");
 Http.send();
 Http.onload = e => {
   applesArray = JSON.parse(Http.responseText);
@@ -58,3 +58,12 @@ Http.onload = e => {
 canvas.addEventListener("click", function(event) {
   console.log(event.x, "   ", event.y);
 });
+
+function recreateCollection() {
+  const recreate = new XMLHttpRequest();
+  recreate.open("POST", "action/recreatecollection");
+  recreate.send();
+  recreate.onload = e => {
+    alert(e.toString());
+  };
+}
