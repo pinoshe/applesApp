@@ -1,5 +1,8 @@
 "use strict";
 
+let clusterArray = [];
+let applesArray = [];
+
 let spinnerInerval = null;
 let canvas = document.getElementById("applesCanvas");
 let context = canvas.getContext("2d");
@@ -31,10 +34,9 @@ function startSpinner() {
   spinnerInerval = window.setInterval(draw, 1000 / 30);
 }
 startSpinner();
-let applesArray = [];
 
 const Http = new XMLHttpRequest();
-Http.open("GET", "api/apples");
+Http.open("GET", "api/entity/apples");
 Http.send();
 Http.onload = e => {
   applesArray = JSON.parse(Http.responseText);
@@ -59,11 +61,18 @@ canvas.addEventListener("click", function(event) {
   console.log(event.x, "   ", event.y);
 });
 
+const getClustersReq = new XMLHttpRequest();
+getClustersReq.open("GET", "api/entity/clusters");
+getClustersReq.send();
+getClustersReq.onload = e => {
+  clusterArray = JSON.parse(getClustersReq.responseText);
+};
+
 function recreateCollection() {
-  const recreate = new XMLHttpRequest();
-  recreate.open("POST", "action/recreatecollection");
-  recreate.send();
-  recreate.onload = e => {
-    alert(e.toString());
+  const recreateReq = new XMLHttpRequest();
+  recreateReq.open("POST", "action/recreatecollection");
+  recreateReq.send();
+  recreateReq.onload = e => {
+    alert(e.target && e.target.statusText);
   };
 }

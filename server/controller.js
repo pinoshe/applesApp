@@ -31,6 +31,9 @@ function parseDataToArray(bufferedData) {
 
 function insertAllApples(data) {
   let ObjectsArray = parseDataToArray(data);
+  // let applesS = ObjectsArray.slice(4600);
+  // console.log(`applesS.length: ${applesS.length}`);
+  let clusteringResults = analistics.calcMeanShiftForData(ObjectsArray);
 
   DB.connect(err => {
     console.log("mongo DB connected");
@@ -43,22 +46,40 @@ function insertAllApples(data) {
     let bulkUpdateOps = [];
 
     collection.deleteMany().then(function(r) {
-      ObjectsArray.forEach(function(doc) {
+      clusteringResults.apples.forEach(function(doc) {
         bulkUpdateOps.push({ insertOne: { document: doc } });
 
         if (bulkUpdateOps.length === 1000) {
-          collection.bulkWrite(bulkUpdateOps).then(function(r) {});
+          collection.bulkWrite(bulkUpdateOps).then(function(r) {
+            console.log(r.insertedCount + " documents inserted");
+          });
           bulkUpdateOps = [];
         }
       });
       if (bulkUpdateOps.length > 0) {
-        collection.bulkWrite(bulkUpdateOps).then(function(r) {});
+        collection.bulkWrite(bulkUpdateOps).then(function(r) {
+          console.log(r.insertedCount + " documents inserted");
+        });
       }
+    });
+
+    const clustersCollection = DB.db("apples_db").collection("clusters");
+    clustersCollection.deleteMany().then(function(r) {
+      clustersCollection.insertMany(clusteringResults.clusters, function(
+        err,
+        res
+      ) {
+        if (err) {
+          console.log(err);
+          throw err;
+        }
+        console.log(res.insertedCount + " documents inserted");
+      });
     });
   });
 }
 
-exports.list_all_apples = (req, res) => {
+exports.list_all = (req, res) => {
   DB.connect(err => {
     console.log("mongo DB connected");
     if (err) {
@@ -66,7 +87,7 @@ exports.list_all_apples = (req, res) => {
       throw err;
     }
     const collection = DB.db("apples_db")
-      .collection("apples")
+      .collection(req.params.entityMame)
       .find({})
       .toArray(function(err, result) {
         if (err) {
@@ -90,6 +111,6 @@ exports.list_all_apples = (req, res) => {
 exports.recreateCollection = (req, res) => {
   analistics.lisenToData(data => {
     insertAllApples(data);
-    res.send(200);
+    res.sendStatus(200);
   });
 };
