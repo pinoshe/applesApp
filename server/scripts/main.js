@@ -59,6 +59,30 @@ stage.on("click tap", function(e) {
       layer.draw();
       layer.add(rect);
       layer.draw();
+
+      const thisClusterApples = applesArray.filter(
+        apple => apple.clusterId === clusterId
+      );
+
+      let titleSpan = document.getElementById("cluster-title");
+      titleSpan.innerHTML = `Cluster #${clusterId} with ${
+        thisClusterApples.length
+      } apples`;
+
+      const applesSizes = thisClusterApples.map(apple => apple.size);
+      const sizeBarsMap = modes(applesSizes);
+
+      buildChart("size-statistics", sizeBarsMap, "sum of apples per size");
+      const applesRightfullness = thisClusterApples.map(
+        apple => apple.rightfullness
+      );
+      const rightfullnessBarsMap = modes(applesRightfullness);
+
+      buildChart(
+        "rightfullness-statistics",
+        rightfullnessBarsMap,
+        "sum of apples per rightfullness %"
+      );
     }
   }
 });
@@ -148,3 +172,61 @@ function recreateCollection() {
 showSpinner();
 getApples(drawApples);
 getClusters(initClusters);
+
+function buildChart(chartId, data, title) {
+  const xValues = Object.keys(data),
+    yValues = Object.values(data),
+    stepSize = 2,
+    minVal = Math.max(Math.min(...yValues) - stepSize, 0),
+    maxVal = Math.max(...yValues) + stepSize;
+  var ctx = document.getElementById(chartId);
+  var myChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [
+        {
+          label: title,
+          data: yValues,
+          backgroundColor: "rgba(255, 99, 132, 0.2)",
+          borderColor: "rgba(54, 162, 235, 1)",
+          borderWidth: 1
+        }
+      ]
+    },
+    options: {
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              max: maxVal,
+              min: minVal,
+              stepSize: stepSize
+            }
+          }
+        ]
+      }
+    }
+  });
+}
+
+function modes(array) {
+  if (!array.length) return [];
+  var modeMap = {},
+    maxCount = 0,
+    modes = [];
+
+  array.forEach(function(val) {
+    if (!modeMap[val]) modeMap[val] = 1;
+    else modeMap[val]++;
+
+    if (modeMap[val] > maxCount) {
+      modes = [val];
+      maxCount = modeMap[val];
+    } else if (modeMap[val] === maxCount) {
+      modes.push(val);
+      maxCount = modeMap[val];
+    }
+  });
+  return modeMap;
+}
