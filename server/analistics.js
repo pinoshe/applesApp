@@ -41,10 +41,15 @@ function calcShift(point, neighbours, kernelBandwidth) {
   return { x: shiftX, y: shiftY };
 }
 
-exports.calcMeanShiftForData = (appleObjectsArray, distance, kernel) => {
-  let lookDistance = parseInt(distance, 10) || 400; //How far to look for neighbours.
-  let kernelBandwidth = parseInt(kernel, 10) || 2250; // Kernel BW parameter.
-  let numOfIterations = 6;
+exports.calcMeanShiftForData = (
+  appleObjectsArray,
+  distance,
+  kernel,
+  iterations
+) => {
+  let lookDistance = parseInt(distance, 10) || 200; //How far to look for neighbours.
+  let kernelBandwidth = parseInt(kernel, 10) || 3000; // Kernel BW parameter.
+  let numOfIterations = iterations || 6;
   console.log(
     `lookDistance is ${lookDistance}, and kernelBandwidth is ${kernelBandwidth}`
   );
@@ -73,7 +78,8 @@ exports.calcMeanShiftForData = (appleObjectsArray, distance, kernel) => {
   for (let apple of appleObjectsArray) {
     let clusterExists = clustersArray.find(
       o =>
-        o.x === Math.trunc(apple.shift_x) && o.y === Math.trunc(apple.shift_y)
+        o.x === Math.round(apple.shift_x / 10) * 10 &&
+        o.y === Math.round(apple.shift_y / 10) * 10
     );
 
     if (clusterExists) {
@@ -85,8 +91,8 @@ exports.calcMeanShiftForData = (appleObjectsArray, distance, kernel) => {
     } else {
       let newCluster = {
         id: clustersArray.length + 1,
-        x: Math.trunc(apple.shift_x),
-        y: Math.trunc(apple.shift_y),
+        x: Math.round(apple.shift_x / 10) * 10,
+        y: Math.round(apple.shift_y / 10) * 10,
         min_x: apple.x_position,
         max_x: apple.x_position,
         min_y: apple.y_position,

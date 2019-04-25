@@ -73,15 +73,29 @@ stage.on("click tap", function(e) {
       const sizeBarsMap = modes(applesSizes);
 
       buildChart("size-statistics", sizeBarsMap, "sum of apples per size");
+
       const applesRightfullness = thisClusterApples.map(
         apple => apple.rightfullness
       );
       const rightfullnessBarsMap = modes(applesRightfullness);
-
       buildChart(
         "rightfullness-statistics",
         rightfullnessBarsMap,
         "sum of apples per rightfullness %"
+      );
+
+      const applesColors = thisClusterApples.map(
+        apple => Math.round(parseInt(apple.color.slice(1, 3), 16) / 50) * 50
+      );
+      const colorsBarsMap = modes(applesColors);
+      const colorsForBars = Object.keys(colorsBarsMap).map(
+        color => `rgba(${color}, 0, 0, 1)`
+      );
+      buildChart(
+        "colors-statistics",
+        colorsBarsMap,
+        "sum of apples per red tint",
+        { colorsForBarsArray: colorsForBars }
       );
     }
   }
@@ -157,28 +171,31 @@ function recreateCollection() {
   showSpinner();
   const d = document.getElementById("dist").value;
   const k = document.getElementById("kernel").value;
+  const i = document.getElementById("iter").value;
 
   const recreateReq = new XMLHttpRequest();
   recreateReq.open("POST", "action/recreatecollection");
   recreateReq.setRequestHeader("Content-Type", "application/json");
-  recreateReq.send(JSON.stringify({ d: d, k: k }));
+  recreateReq.send(JSON.stringify({ d: d, k: k, i: i }));
   recreateReq.onload = e => {
     //alert(e.target && e.target.statusText);
 
-    getApples(drawApples);
-    getClusters(initClusters);
+    setTimeout(() => {
+      getApples(drawApples);
+      getClusters(initClusters);
+    }, 3000);
   };
 }
 showSpinner();
 getApples(drawApples);
 getClusters(initClusters);
 
-function buildChart(chartId, data, title) {
+function buildChart(chartId, data, title, options = {}) {
   const xValues = Object.keys(data),
     yValues = Object.values(data),
-    stepSize = 2,
-    minVal = Math.max(Math.min(...yValues) - stepSize, 0),
-    maxVal = Math.max(...yValues) + stepSize;
+    minVal = 0,
+    maxVal = Math.max(...yValues),
+    stepSize = Math.ceil(maxVal / 6);
   var ctx = document.getElementById(chartId);
   var myChart = new Chart(ctx, {
     type: "bar",
@@ -188,7 +205,8 @@ function buildChart(chartId, data, title) {
         {
           label: title,
           data: yValues,
-          backgroundColor: "rgba(255, 99, 132, 0.2)",
+          backgroundColor:
+            options.colorsForBarsArray || "rgba(255, 99, 132, 0.2)",
           borderColor: "rgba(54, 162, 235, 1)",
           borderWidth: 1
         }

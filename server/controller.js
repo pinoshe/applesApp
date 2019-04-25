@@ -29,13 +29,14 @@ function parseDataToArray(bufferedData) {
   return ObjectsArray;
 }
 
-function insertAllApples(data, distance, kernel) {
+function insertAllApples(data, distance, kernel, iterations) {
   let ObjectsArray = parseDataToArray(data);
   //.slice(3500)
   let clusteringResults = analistics.calcMeanShiftForData(
     ObjectsArray,
     distance,
-    kernel
+    kernel,
+    iterations
   );
 
   DB.connect(err => {
@@ -104,7 +105,7 @@ exports.list_all = (req, res) => {
 
 exports.recreateCollection = (req, res) => {
   analistics.lisenToData(data => {
-    insertAllApples(data, req.body.d, req.body.k);
+    insertAllApples(data, req.body.d, req.body.k, req.body.i);
     res.sendStatus(200);
   });
 };

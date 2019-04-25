@@ -23,17 +23,21 @@
         overflow: auto;
         display: inline-block;
         vertical-align: top;
+        height: 800px;
       }
       #statistics-container canvas {
         border: 1px solid #000000;
-        height: 400px;
+        height: 250;
         width: 400px;
       }
     </style>
     <div>
       <button onclick="recreateCollection()">RECREATE COLLECTION</button>
-      <input type="number" id="dist" />
-      <input type="number" id="kernel" />
+      distance:<input type="number" id="dist" /> kernel:<input
+        type="number"
+        id="kernel"
+      />
+      iterations:<input type="number" id="iter" />
       <span id="cluster-title"></span>
     </div>
 
@@ -42,6 +46,7 @@
     <div id="statistics-container">
       <canvas id="size-statistics"></canvas>
       <canvas id="rightfullness-statistics"> </canvas>
+      <canvas id="colors-statistics"> </canvas>
     </div>
 
     <script src="scripts/dist/Chart.js"></script>
