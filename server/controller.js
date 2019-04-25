@@ -29,11 +29,14 @@ function parseDataToArray(bufferedData) {
   return ObjectsArray;
 }
 
-function insertAllApples(data) {
+function insertAllApples(data, distance, kernel) {
   let ObjectsArray = parseDataToArray(data);
-  // let applesS = ObjectsArray.slice(4600);
-  // console.log(`applesS.length: ${applesS.length}`);
-  let clusteringResults = analistics.calcMeanShiftForData(ObjectsArray);
+  //.slice(3500)
+  let clusteringResults = analistics.calcMeanShiftForData(
+    ObjectsArray,
+    distance,
+    kernel
+  );
 
   DB.connect(err => {
     console.log("mongo DB connected");
@@ -51,14 +54,14 @@ function insertAllApples(data) {
 
         if (bulkUpdateOps.length === 1000) {
           collection.bulkWrite(bulkUpdateOps).then(function(r) {
-            console.log(r.insertedCount + " documents inserted");
+            console.log(r.insertedCount + " apples inserted");
           });
           bulkUpdateOps = [];
         }
       });
       if (bulkUpdateOps.length > 0) {
         collection.bulkWrite(bulkUpdateOps).then(function(r) {
-          console.log(r.insertedCount + " documents inserted");
+          console.log(r.insertedCount + " apples inserted");
         });
       }
     });
@@ -73,7 +76,7 @@ function insertAllApples(data) {
           console.log(err);
           throw err;
         }
-        console.log(res.insertedCount + " documents inserted");
+        console.log(res.insertedCount + " clusters inserted");
       });
     });
   });
@@ -95,22 +98,13 @@ exports.list_all = (req, res) => {
           res.send(err);
         }
         res.send(result);
-
-        // let appleObjectsArrayCopy = result.slice(0, 200).map(function(apple) {
-        //   return {
-        //     apple_num: apple.apple_num,
-        //     x_position: apple.x_position,
-        //     y_position: apple.y_position
-        //   };
-        // });
-        //analistics.calcMeanShiftForData(appleObjectsArrayCopy);
       });
   });
 };
 
 exports.recreateCollection = (req, res) => {
   analistics.lisenToData(data => {
-    insertAllApples(data);
+    insertAllApples(data, req.body.d, req.body.k);
     res.sendStatus(200);
   });
 };

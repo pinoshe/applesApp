@@ -6,25 +6,33 @@
       type="image/x-icon"
       href="https://aux.iconspalace.com/uploads/1739849723268665520.png"
     />
+    <script src="https://unpkg.com/konva@3.2.4/konva.min.js"></script>
     <title>Apples Clustering</title>
   </head>
   <body>
     <style>
-      #applesCanvas {
+      /* #applesCanvas {
         width: 50;
         height: 50;
         padding: 30px;
+      } */
+      #canvas-container {
+        border: 1px solid #000000;
       }
     </style>
 
-    <canvas
+    <!-- <canvas
       id="applesCanvas"
       width="800"
       height="800"
       style="border:1px solid #000000;"
     >
-    </canvas>
+    </canvas> -->
+
+    <div id="canvas-container"></div>
     <button onclick="recreateCollection()">RECREATE COLLECTION</button>
+    <input type="number" id="dist" />
+    <input type="number" id="kernel" />
     <script src="scripts/main.js"></script>
   </body>
 </html>

@@ -3,76 +3,135 @@
 let clusterArray = [];
 let applesArray = [];
 
-let spinnerInerval = null;
-let canvas = document.getElementById("applesCanvas");
-let context = canvas.getContext("2d");
-let cW = context.canvas.width;
-let cH = context.canvas.height;
+let canvasWidth = 800;
+let canvasHeight = 800;
 
-function removeSpinner() {}
-function startSpinner() {
-  let start = new Date(),
-    lines = 16;
-
-  let draw = function() {
-    let rotation = parseInt(((new Date() - start) / 1000) * lines) / lines;
-    context.save();
-    context.clearRect(0, 0, cW, cH);
-    context.translate(cW / 2, cH / 2);
-    context.rotate(Math.PI * 2 * rotation);
-    for (let i = 0; i < lines; i++) {
-      context.beginPath();
-      context.rotate((Math.PI * 2) / lines);
-      context.moveTo(cW / 10, 0);
-      context.lineTo(cW / 4, 0);
-      context.lineWidth = cW / 30;
-      context.strokeStyle = "rgba(205, 0, 0," + i / lines + ")";
-      context.stroke();
-    }
-    context.restore();
-  };
-  spinnerInerval = window.setInterval(draw, 1000 / 30);
-}
-startSpinner();
-
-const Http = new XMLHttpRequest();
-Http.open("GET", "api/entity/apples");
-Http.send();
-Http.onload = e => {
-  applesArray = JSON.parse(Http.responseText);
-  clearInterval(spinnerInerval);
-  context.clearRect(0, 0, cW, cH);
-  for (let i in applesArray) {
-    context.beginPath();
-    context.arc(
-      applesArray[i].x_position + 100,
-      800 - applesArray[i].y_position - 100,
-      applesArray[i].size / 2,
-      0,
-      2 * Math.PI
-    );
-    context.fillStyle = applesArray[i].color;
-    context.fill();
-    context.stroke();
-  }
-};
-
-canvas.addEventListener("click", function(event) {
-  console.log(event.x, "   ", event.y);
+let stage = new Konva.Stage({
+  container: "canvas-container",
+  width: canvasWidth,
+  height: canvasHeight
 });
 
-const getClustersReq = new XMLHttpRequest();
-getClustersReq.open("GET", "api/entity/clusters");
-getClustersReq.send();
-getClustersReq.onload = e => {
-  clusterArray = JSON.parse(getClustersReq.responseText);
-};
+let layer = new Konva.Layer();
+stage.add(layer);
 
-function recreateCollection() {
-  const recreateReq = new XMLHttpRequest();
-  recreateReq.open("POST", "action/recreatecollection");
-  recreateReq.send();
-  recreateReq.onload = e => {
-    alert(e.target && e.target.statusText);
+let path = new Konva.Path({
+  x: canvasWidth / 2,
+  y: canvasHeight / 2,
+  data:
+    "M12.582,9.551C3.251,16.237,0.921,29.021,7.08,38.564l-2.36,1.689l4.893,2.262l4.893,2.262l-0.568-5.36l-0.567-5.359l-2.365,1.694c-4.657-7.375-2.83-17.185,4.352-22.33c7.451-5.338,17.817-3.625,23.156,3.824c5.337,7.449,3.625,17.813-3.821,23.152l2.857,3.988c9.617-6.893,11.827-20.277,4.935-29.896C35.591,4.87,22.204,2.658,12.582,9.551z",
+  fill: "green",
+  scale: {
+    x: 2,
+    y: 2
+  },
+  offset: {
+    x: 25,
+    y: 25
+  }
+});
+
+layer.add(path);
+var anim = new Konva.Animation(function(frame) {
+  var angleDiff = -(frame.timeDiff * 90) / 1000;
+  path.rotate(angleDiff);
+}, layer);
+
+stage.on("click tap", function(e) {
+  const clusterId = e.target.attrs && e.target.attrs.clusterId;
+  if (clusterId) {
+    const cluster = clusterArray.find(cluster => cluster.id === clusterId);
+    if (cluster) {
+      console.log(cluster);
+      let rect = new Konva.Rect({
+        x: cluster.min_x + 100,
+        y: 800 - cluster.max_y - 100,
+        width: Math.abs(cluster.max_x - cluster.min_x),
+        height: Math.abs(cluster.max_x - cluster.min_x),
+        stroke: "black",
+        strokeWidth: 4
+      });
+
+      var rects = stage.find("Rect");
+      rects.each(function(rect) {
+        rect.destroy();
+      });
+      layer.draw();
+      layer.add(rect);
+      layer.draw();
+    }
+  }
+});
+
+function showSpinner() {
+  anim.start();
+  path.show();
+  layer.draw();
+}
+function hideSpinner() {
+  path.hide();
+  layer.draw();
+}
+
+function getApples(callback) {
+  const Http = new XMLHttpRequest();
+  Http.open("GET", "api/entity/apples");
+  Http.send();
+  Http.onload = e => {
+    callback(Http.responseText);
   };
 }
+function drawApples(data) {
+  applesArray = JSON.parse(data);
+
+  var circles = stage.find("Circle");
+  circles.each(function(circle) {
+    circle.destroy();
+  });
+
+  for (let i in applesArray) {
+    var circle = new Konva.Circle({
+      x: applesArray[i].x_position + 100,
+      y: 800 - applesArray[i].y_position - 100,
+      radius: applesArray[i].size / 2,
+      fill: applesArray[i].color,
+      clusterId: applesArray[i].clusterId
+    });
+
+    layer.add(circle);
+  }
+  layer.draw();
+  hideSpinner();
+}
+function getClusters(callback) {
+  const getClustersReq = new XMLHttpRequest();
+  getClustersReq.open("GET", "api/entity/clusters");
+  getClustersReq.send();
+  getClustersReq.onload = e => {
+    callback(getClustersReq.responseText);
+  };
+}
+
+function initClusters(data) {
+  clusterArray = JSON.parse(data);
+}
+
+function recreateCollection() {
+  showSpinner();
+  const d = document.getElementById("dist").value;
+  const k = document.getElementById("kernel").value;
+
+  const recreateReq = new XMLHttpRequest();
+  recreateReq.open("POST", "action/recreatecollection");
+  recreateReq.setRequestHeader("Content-Type", "application/json");
+  recreateReq.send(JSON.stringify({ d: d, k: k }));
+  recreateReq.onload = e => {
+    //alert(e.target && e.target.statusText);
+
+    getApples(drawApples);
+    getClusters(initClusters);
+  };
+}
+showSpinner();
+getApples(drawApples);
+getClusters(initClusters);

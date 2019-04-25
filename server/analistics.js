@@ -37,14 +37,17 @@ function calcShift(point, neighbours, kernelBandwidth) {
 
   shiftX = shiftX / scaleFactor;
   shiftY = shiftY / scaleFactor;
+
   return { x: shiftX, y: shiftY };
 }
 
-exports.calcMeanShiftForData = appleObjectsArray => {
-  let lookDistance = 1; //How far to look for neighbours.
-  let kernelBandwidth = 5; // Kernel BW parameter.
-  let numOfIterations = 5; // optional.
-
+exports.calcMeanShiftForData = (appleObjectsArray, distance, kernel) => {
+  let lookDistance = parseInt(distance, 10) || 400; //How far to look for neighbours.
+  let kernelBandwidth = parseInt(kernel, 10) || 2250; // Kernel BW parameter.
+  let numOfIterations = 6;
+  console.log(
+    `lookDistance is ${lookDistance}, and kernelBandwidth is ${kernelBandwidth}`
+  );
   // 1) For each datapoint x ∈ X, find the neighbouring points N(x) of x.
   // 2) For each datapoint x ∈ X, calculate the mean shift m(x).
   // 3) For each datapoint x ∈ X, update x ← m(x).
@@ -60,8 +63,8 @@ exports.calcMeanShiftForData = appleObjectsArray => {
         lookDistance
       );
       let newShifts = calcShift(apple, neighbours, kernelBandwidth);
-      apple.shift_x = Number(newShifts.x.toFixed(0));
-      apple.shift_y = Number(newShifts.y.toFixed(0));
+      apple.shift_x = newShifts.x;
+      apple.shift_y = newShifts.y;
     }
 
     //console.log(`appleObjectsArray after: ${appleObjectsArray}`);
@@ -69,7 +72,8 @@ exports.calcMeanShiftForData = appleObjectsArray => {
   let clustersArray = [];
   for (let apple of appleObjectsArray) {
     let clusterExists = clustersArray.find(
-      o => o.x === apple.shift_x && o.y === apple.shift_y
+      o =>
+        o.x === Math.trunc(apple.shift_x) && o.y === Math.trunc(apple.shift_y)
     );
 
     if (clusterExists) {
@@ -81,8 +85,8 @@ exports.calcMeanShiftForData = appleObjectsArray => {
     } else {
       let newCluster = {
         id: clustersArray.length + 1,
-        x: apple.shift_x,
-        y: apple.shift_y,
+        x: Math.trunc(apple.shift_x),
+        y: Math.trunc(apple.shift_y),
         min_x: apple.x_position,
         max_x: apple.x_position,
         min_y: apple.y_position,
@@ -93,7 +97,7 @@ exports.calcMeanShiftForData = appleObjectsArray => {
     }
   }
 
-  console.log(clustersArray);
+  //console.log(clustersArray);
   return { apples: appleObjectsArray, clusters: clustersArray };
 };
 
