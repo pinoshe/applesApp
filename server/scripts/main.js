@@ -45,7 +45,7 @@ stage.on("click tap", function(e) {
       console.log(cluster);
       let rect = new Konva.Rect({
         x: cluster.min_x + 100,
-        y: 800 - cluster.max_y - 100,
+        y: canvasWidth - cluster.max_y - 100,
         width: Math.abs(cluster.max_x - cluster.min_x),
         height: Math.abs(cluster.max_x - cluster.min_x),
         stroke: "black",
@@ -82,17 +82,30 @@ function getApples(callback) {
   };
 }
 function drawApples(data) {
-  applesArray = JSON.parse(data);
-
   var circles = stage.find("Circle");
   circles.each(function(circle) {
     circle.destroy();
   });
 
+  applesArray = JSON.parse(data);
+
+  const allX = applesArray.map(apple => apple.x_position);
+  const allY = applesArray.map(apple => apple.y_position);
+  const minX = Math.min(...allX);
+  const maxX = Math.max(...allX);
+  const minY = Math.min(...allY);
+  const maxY = Math.max(...allY);
+
+  canvasWidth = Math.round(maxX + Math.abs(minX) + 100);
+  canvasHeight = Math.round(maxY + Math.abs(minY) + 100);
+
+  stage.setWidth(canvasWidth);
+  stage.setHeight(canvasHeight);
+
   for (let i in applesArray) {
     var circle = new Konva.Circle({
       x: applesArray[i].x_position + 100,
-      y: 800 - applesArray[i].y_position - 100,
+      y: canvasWidth - applesArray[i].y_position - 100,
       radius: applesArray[i].size / 2,
       fill: applesArray[i].color,
       clusterId: applesArray[i].clusterId

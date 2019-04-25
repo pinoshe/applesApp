@@ -66,10 +66,10 @@ exports.calcMeanShiftForData = (appleObjectsArray, distance, kernel) => {
       apple.shift_x = newShifts.x;
       apple.shift_y = newShifts.y;
     }
-
-    //console.log(`appleObjectsArray after: ${appleObjectsArray}`);
   }
+
   let clustersArray = [];
+
   for (let apple of appleObjectsArray) {
     let clusterExists = clustersArray.find(
       o =>
@@ -97,7 +97,6 @@ exports.calcMeanShiftForData = (appleObjectsArray, distance, kernel) => {
     }
   }
 
-  //console.log(clustersArray);
   return { apples: appleObjectsArray, clusters: clustersArray };
 };
 
